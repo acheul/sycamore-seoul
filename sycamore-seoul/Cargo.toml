@@ -1,0 +1,23 @@
+[package]
+name = "sycamore-seoul"
+version = "0.1.0"
+edition = "2021"
+authors = ["Acheul <seoul605.21@gmail.com>"]
+repository = "https://github.com/acheul/sycamore-seoul"
+description = "Some extentions for Sycamore library"
+keywords = ["sycamore", "resize", "web"]
+license = "MIT"
+
+
+[dependencies]
+gloo-utils = "0.2.0"
+sycamore = { version = "0.9.0-beta.2" }
+wasm-bindgen = "0.2.90"
+
+[dependencies.web-sys]
+version = "0.3.67"
+features = [
+  "Window", "Document", "HtmlDocument", "Element", "DomRect",
+  "HtmlElement", "CssStyleDeclaration", 
+  "EventTarget", "MouseEvent",
+]
