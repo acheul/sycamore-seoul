@@ -1,27 +1,30 @@
 use crate::*;
+use hashbrown::HashMap;
 
 #[component]
 pub fn TestResizer<G: Html>() -> View<G> {
 
   let length = create_signal(0.);
+  let moving = create_signal(false);
 
   create_effect(on(length, move || {
-    if length.get()>0. {
-      log!(format!("panel length: {:.2}%", length.get()));
-    }
+    log!(format!("length: {:.2}", length.get()));
+  }));
+
+  create_effect(on(moving, move || {
+    log!(format!("moving: {:?}", moving.get()));
   }));
 
   let resizer_rf = create_node_ref();
 
   Resizer {
-    is_panel: true,
     is_lateral: true,
     to_left: false,
     min_length: Some(StyleLength::Pixel(100.)),
     max_length: Some(StyleLength::Pixel(1000.)),
     replace_class_on_move: ("resizer-static", "resizer-moving"),
     resizer_rf,
-  }.set_event_handler(Some(length), None);
+  }.set_panel_resizer(Some(moving), Some(length));
 
   view! {
     div(class="full container") {
@@ -30,7 +33,7 @@ pub fn TestResizer<G: Html>() -> View<G> {
         div(class="full parcels-vertical") {
           Parcels(
             is_lateral=false, to_left=true,
-            min_length=StyleLength::Percent(5.), max_length=StyleLength::Percent(50.), parcel_class="parcel-vertical", resizer_class="resizer-top",
+            min_length=StyleLength::Percent(5.), max_length=StyleLength::Percent(50.), parcel_class="parcel-vertical", resizer_class="resizer-top"
           )
         }
       }
@@ -46,7 +49,9 @@ pub fn TestResizer<G: Html>() -> View<G> {
 
 
 #[component(inline_props)]
-fn Parcels<G: Html>(is_lateral: bool, to_left: bool, min_length: StyleLength, max_length: StyleLength, parcel_class: &'static str, resizer_class: &'static str) -> View<G> {
+fn Parcels<G: Html>(
+  is_lateral: bool, to_left: bool, min_length: StyleLength, max_length: StyleLength, parcel_class: &'static str, resizer_class: &'static str
+) -> View<G> {
 
   let parcels = create_signal(vec![0, 1, 2, 3]);
 
@@ -64,18 +69,17 @@ fn Parcels<G: Html>(is_lateral: bool, to_left: bool, min_length: StyleLength, ma
   }
 }
 
+
 #[component(inline_props)]
 fn Parcel<G: Html>(
   is_lateral: bool, to_left: bool, min_length: StyleLength, max_length: StyleLength, parcel_class: &'static str, resizer_class: &'static str,
   parcels: Signal<Vec<i32>>, p: i32
 ) -> View<G> {
 
-  let changed = create_signal(false);
+  let parcel_lengths = create_signal(HashMap::<usize, f64>::new());
 
-  create_effect(on(changed, move || {
-    if changed.get() {
-      log!(p, "changed");
-    }
+  create_effect(on(parcel_lengths, move || {
+    log!(format!("parcel_lengths: {:?}", parcel_lengths.get_clone()));
   }));
 
   let is_terminal = create_memo(on(parcels, move || {
@@ -90,14 +94,13 @@ fn Parcel<G: Html>(
     let resizer_rf = create_node_ref();
 
     Resizer {
-      is_panel: false,
       is_lateral: is_lateral,
       to_left: to_left,
       min_length: Some(min_length),
       max_length: Some(max_length),
       replace_class_on_move: ("resizer-static", "resizer-moving"),
       resizer_rf,
-    }.set_event_handler(None, Some(changed));
+    }.set_parcels_resizer(None, Some(parcel_lengths), Some("parcel"));
     
     view! {
       div(ref=resizer_rf, class=[resizer_class, "resizer-static"].join(" ")) {}
@@ -105,7 +108,7 @@ fn Parcel<G: Html>(
   });
   
   view! {
-    div(class=[parcel_class, "center"].join(" ")) {
+    div(class=[parcel_class, "center"].join(" "), data-parcel=p) {
       (if !is_terminal.get() {
         view! { (resizer.get_clone()) }
       } else {

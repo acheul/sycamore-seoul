@@ -8,3 +8,4 @@ gloo-console = "0.3.0"
 sycamore = { version = "0.9.0-beta.2" }
 sycamore-router = "0.9.0-beta.2"
 sycamore-seoul = { path="../sycamore-seoul" }
+hashbrown = "0.14.3"
