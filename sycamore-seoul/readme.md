@@ -11,3 +11,5 @@ There are two types of `Resizer`
 
 1. Panel
 2. Parcels
+
+## ScrollBar

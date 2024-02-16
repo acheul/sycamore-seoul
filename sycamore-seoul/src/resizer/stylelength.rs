@@ -1,4 +1,4 @@
-/// StyleLength handles css length in pixel and percent type.
+/// StyleLength handles css length in either/both pixel or percent format.
 /// 
 /// # Examples
 /// ```
@@ -30,6 +30,14 @@ impl StyleLength {
       Self::Pixel(v) => to_length<=*v,
       Self::Percent(v) => to_percent_length<=*v,
       Self::PixelPercent(v1, v2) => to_length<=*v1 && to_percent_length<=*v2,
+    }
+  }
+
+  pub fn to_percent_length(&self, parent_length: f64) -> f64 {
+    match self {
+      Self::Pixel(v) => (*v)/parent_length*100.,
+      Self::Percent(v) => *v,
+      Self::PixelPercent(_, v) => *v,
     }
   }
 }

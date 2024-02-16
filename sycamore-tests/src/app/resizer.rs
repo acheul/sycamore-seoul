@@ -22,9 +22,9 @@ pub fn TestResizer<G: Html>() -> View<G> {
     to_left: false,
     min_length: Some(StyleLength::Pixel(100.)),
     max_length: Some(StyleLength::Pixel(1000.)),
-    replace_class_on_move: ("resizer-static", "resizer-moving"),
+    change_class_on_move: Some((Some("resizer-static"), "resizer-moving")),
     resizer_rf,
-  }.set_panel_resizer(Some(moving), Some(length));
+  }.set_panel_resizer(Some(moving), Some(length), false);
 
   view! {
     div(class="full container") {
@@ -91,19 +91,22 @@ fn Parcel<G: Html>(
   }));
 
   let resizer = create_memo(move || {
-    let resizer_rf = create_node_ref();
 
-    Resizer {
-      is_lateral: is_lateral,
-      to_left: to_left,
-      min_length: Some(min_length),
-      max_length: Some(max_length),
-      replace_class_on_move: ("resizer-static", "resizer-moving"),
-      resizer_rf,
-    }.set_parcels_resizer(None, Some(parcel_lengths), Some("parcel"));
+    let class = [resizer_class, "resizer-static"].join(" ");
+    let class = class.into_boxed_str();
+    let class = Box::leak(class);
     
     view! {
-      div(ref=resizer_rf, class=[resizer_class, "resizer-static"].join(" ")) {}
+      ParcelsResizerComponent(
+        parcel_lengths=parcel_lengths,
+        parcel_name="parcel",
+        class=class,
+        change_class_on_move=(Some("resizer-static"), "resizer-moving"),
+        is_lateral=is_lateral,
+        to_left=to_left,
+        min_length=min_length,
+        max_length=max_length,
+      )
     }
   });
   

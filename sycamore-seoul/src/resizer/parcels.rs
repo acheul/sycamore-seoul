@@ -1,10 +1,16 @@
 use super::*;
 
-
-pub fn handle_parcels_mousemove<G: GenericNode>(is_lateral: bool, to_left: bool, min_length: Option<StyleLength>, max_length: Option<StyleLength>, resizer_rf: NodeRef<G>, e: MouseEvent)
--> Option<f64> {
-
-  let resizer: Element = resizer_rf.get::<DomNode>().unchecked_into();
+pub fn handle_parcels_mousemove<G: GenericNode, P>(
+  is_lateral: bool, to_left: bool,
+  min_length: Option<StyleLength>, max_length: Option<StyleLength>, 
+  resizer_rf: NodeRef<G>,
+  e: MouseEvent,
+  parcel_name: Option<&str>,
+  skip_set_style: bool
+) -> Option<HashMap<P, f64>>
+where P: std::cmp::Eq + std::hash::Hash + FromStr
+{
+  let Some(resizer) = resizer_rf.try_get::<DomNode>().map(|x| x.unchecked_into::<Element>()) else { return None };
   let Some(element) = resizer.parent_element() else { return None };
 
   // get expanding element's values
@@ -44,17 +50,28 @@ pub fn handle_parcels_mousemove<G: GenericNode>(is_lateral: bool, to_left: bool,
       let siblings2_to_precent_length: Vec<f64> = siblings2.iter().map(|sibling| get_length(is_lateral, sibling)/parent_length*100.).collect();
 
       // set style for all the parcels
-      let pl = set_percent_length_style(is_lateral, element, to_percent_length);
+      let mut map = HashMap::new();
 
-      siblings.into_iter().zip(siblings_to_percent_length.into_iter()).for_each(|(element, to_percent_length)| {
-        set_percent_length_style(is_lateral, element, to_percent_length);
-      });
+      // the one
+      let element: HtmlElement = element.unchecked_into();
+      if !skip_set_style {
+        set_percent_length_style(is_lateral, &element, to_percent_length);
+      }
+      parcel_name.map(|name| update_map(&mut map, name, &element, to_percent_length));
 
-      siblings2.into_iter().zip(siblings2_to_precent_length.into_iter()).for_each(|(element, to_percent_length)| {
-        set_percent_length_style(is_lateral, element, to_percent_length);
-      });
+      // siblings
+      siblings.into_iter().zip(siblings_to_percent_length.into_iter())
+        .chain(siblings2.into_iter().zip(siblings2_to_precent_length.into_iter()))
+        .for_each(|(element, pl)| {
 
-      return Some(pl);
+          let element: HtmlElement = element.unchecked_into();
+          if !skip_set_style {
+            set_percent_length_style(is_lateral, &element, pl);
+          }
+          parcel_name.map(|name| update_map(&mut map, name, &element, pl));
+        });
+
+      return Some(map);
     }
   }
   None
@@ -133,4 +150,17 @@ fn get_sibling_to_lengths(is_lateral: bool, sibling: &Element, parent_length: f6
     else { Some((to_length, to_length/parent_length*100.)) };
 
   (length, to_lengths)
+}
+
+
+/// Update map with <parcel_name: pl>, collecting parcel_name from element's dataset.
+/// Hereby the pl is percent length which the element would have.
+fn update_map<P>(map: &mut HashMap<P, f64>, parcel_name: &str, elem: &HtmlElement, pl: f64)
+where P: std::cmp::Eq + std::hash::Hash + FromStr
+{
+  if let Some(value) = elem.dataset().get(parcel_name) {
+    if let Ok(p) = value.parse() {
+      map.insert(p, pl);
+    }
+  }
 }
