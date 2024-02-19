@@ -2,43 +2,51 @@ use crate::*;
 
 // resizer components
 
+// panel
+
+/// PanelResizerProps
+/// 
 #[derive(Props)]
 pub struct PanelResizerProps{
   moving: Option<Signal<bool>>,
-  panel_length: Option<Signal<f64>>,
+  panel_length: Option<Signal<StyleLength>>,
   class: &'static str,
   is_lateral: bool,
   to_left: bool,
-  min_length: Option<StyleLength>,
-  max_length: Option<StyleLength>,
+  to_pixel: bool,
+  min_len: Option<StyleLength>,
+  max_len: Option<StyleLength>,
   change_class_on_move: Option<(Option<&'static str>, &'static str)>,
   skip_set_style: Option<bool>,
 }
 
-/// PanelResizerComponent
+/// PanelResizer
 /// * Panel type
-/// * check `Resizer` for more information.
+/// * Loot at `Resizer`'s `set_panel_resizer` for more information.
 /// 
 /// # Props
 /// * moving: Option<Signal<bool>>,
-/// * panel_length: Option<Signal<f64>>,
+/// * panel_length: Option<Signal<StyleLength>>,
 /// * class: &'static str,
 /// * is_lateral: bool,
 /// * to_left: bool,
-/// * min_length: Option<StyleLength>,
-/// * max_length: Option<StyleLength>,
+/// * to_pixel: bool,
+/// * min_len: Option<StyleLength>,
+/// * max_len: Option<StyleLength>,
 /// * change_class_on_move: Option<(Option<&'static str>, &'static str)>,
 /// * skip_set_style: Option<bool>,
+/// 
 #[component]
-pub fn PanelResizerComponent<G: Html>(props: PanelResizerProps) -> View<G> {
+pub fn PanelResizer<G: Html>(props: PanelResizerProps) -> View<G> {
 
   let rf = create_node_ref();
 
   Resizer {
     is_lateral: props.is_lateral,
     to_left: props.to_left,
-    min_length: props.min_length,
-    max_length: props.max_length,
+    to_pixel: props.to_pixel,
+    min_len: props.min_len,
+    max_len: props.max_len,
     change_class_on_move: props.change_class_on_move,
     resizer_rf: rf,
   }.set_panel_resizer(props.moving, props.panel_length, props.skip_set_style.unwrap_or(false));
@@ -49,43 +57,49 @@ pub fn PanelResizerComponent<G: Html>(props: PanelResizerProps) -> View<G> {
 }
 
 
+// parcels
+
+/// ParcelsResizerProps
+/// 
 #[derive(Props)]
 pub struct ParcelsResizerProps<G: Html, P>
 where P: std::cmp::Eq + std::hash::Hash + FromStr + 'static
 {
   rf: Option<NodeRef<G>>,
   moving: Option<Signal<bool>>,
-  parcel_lengths: Option<Signal<HashMap<P, f64>>>,
+  parcel_lengths: Option<Signal<HashMap<P, StyleLength>>>,
   parcel_name: Option<&'static str>,
   class: &'static str,
   is_lateral: bool,
   to_left: bool,
-  min_length: Option<StyleLength>,
-  max_length: Option<StyleLength>,
+  to_pixel: bool,
+  min_len: Option<StyleLength>,
+  max_len: Option<StyleLength>,
   change_class_on_move: Option<(Option<&'static str>, &'static str)>,
   skip_set_style: Option<bool>,
 }
 
 
-/// ParcelsResizerComponent
+/// ParcelsResizer
 /// * Parcels type
-/// * check `Resizer` for more information.
+/// * Look at `Resizer`'s `set_parcels_resizer` for more information.
 /// 
 /// # Props
 /// * rf: Option<NodeRef<G>>,
 /// * moving: Option<Signal<bool>>,
-/// * parcel_lengths: Option<Signal<HashMap<P, f64>>>,
+/// * parcel_lengths: Option<Signal<HashMap<P, StyleLength>>>,
 /// * parcel_name: Option<&'static str>,
 /// * class: &'static str,
 /// * is_lateral: bool,
 /// * to_left: bool,
-/// * min_length: Option<StyleLength>,
-/// * max_length: Option<StyleLength>,
+/// * to_pixel: bool,
+/// * min_len: Option<StyleLength>,
+/// * max_len: Option<StyleLength>,
 /// * change_class_on_move: Option<(Option<&'static str>, &'static str)>,
 /// * skip_set_style: Option<bool>,
 /// 
 #[component]
-pub fn ParcelsResizerComponent<G: Html, P>(props: ParcelsResizerProps<G, P>) -> View<G>
+pub fn ParcelsResizer<G: Html, P>(props: ParcelsResizerProps<G, P>) -> View<G>
 where P: std::cmp::Eq + std::hash::Hash + FromStr
 {
   let rf = props.rf.unwrap_or(create_node_ref());
@@ -93,8 +107,9 @@ where P: std::cmp::Eq + std::hash::Hash + FromStr
   Resizer {
     is_lateral: props.is_lateral,
     to_left: props.to_left,
-    min_length: props.min_length,
-    max_length: props.max_length,
+    to_pixel: props.to_pixel,
+    min_len: props.min_len,
+    max_len: props.max_len,
     change_class_on_move: props.change_class_on_move,
     resizer_rf: rf
   }.set_parcels_resizer(props.moving, props.parcel_lengths, props.parcel_name, props.skip_set_style.unwrap_or(false));

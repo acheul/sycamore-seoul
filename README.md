@@ -24,6 +24,3 @@ https://github.com/acheul/sycamore-seoul/assets/72500819/4f8ecc66-c756-4ede-aff2
 
 
 ## ScrollBar
-
-
-## Parcels

@@ -1,11 +1,14 @@
 mod changeclass;
 pub use changeclass::ChangeClass;
 
+mod stylelength;
+pub use stylelength::StyleLength;
+
 mod resizer;
-pub use resizer::{Resizer, StyleLength, PanelResizerProps, PanelResizerComponent, ParcelsResizerProps, ParcelsResizerComponent};
+pub use resizer::{Resizer, PanelResizerProps, PanelResizer, ParcelsResizerProps, ParcelsResizer};
 
 mod scrollbar;
-pub use scrollbar::{ScrollBar, ScrollBarProps, ScrollBarComponent};
+pub use scrollbar::{ScrollBar, ScrollBarProps, ScrollBarComponent, listen_window_resize_event, sync_scroll_absolute_position};
 
 use sycamore::prelude::*;
 use web_sys::{

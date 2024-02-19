@@ -1,40 +1,43 @@
 use super::*;
 
 
-pub fn handle_panel_mousemove<G: GenericNode>(is_lateral: bool, to_left: bool, min_length: Option<StyleLength>, max_length: Option<StyleLength>, resizer_rf: NodeRef<G>, e: MouseEvent, skip_set_style: bool)
--> Option<f64>
+pub fn handle_panel_mousemove<G: GenericNode>(
+  is_lateral: bool, 
+  to_left: bool,
+  to_pixel: bool,
+  min_len: Option<StyleLength>, 
+  max_len: Option<StyleLength>, 
+  resizer_rf: NodeRef<G>, 
+  e: MouseEvent, 
+  skip_set_style: bool
+)
+-> Option<StyleLength>
 {
-  let Some(resizer) = resizer_rf.try_get::<DomNode>().map(|x| x.unchecked_into::<Element>()) else { return None };
-  let Some(element) = resizer.parent_element() else { return None };
-  let Some((to_length, to_percent_length, is_expanding)) = get_panel_to_lengths(is_lateral, to_left, &element, e) else { return None };
+  // resizer's parent element
+  let Some(element) = resizer_parent_element(resizer_rf) else { return None };
 
-  let limit_check = if is_expanding {
-    max_length.map(|x| x.check_max_limit(to_length, to_percent_length)).unwrap_or(true)
-  } else {
-    min_length.map(|x| x.check_min_limit(to_length, to_percent_length)).unwrap_or(true)
-  };
+  // calculate new length (px)
+  let Some((par_len, len, gap)) = get_lengths(&element, e, is_lateral, to_left) else { return None };
+  if gap==0. { return None; }
+  let (to_len, is_expanding) = (len + gap, gap>0.);
 
-  if limit_check{
-    if skip_set_style {
-      Some(to_percent_length) 
-    } else {
-      Some(set_percent_length_style(is_lateral, &element.unchecked_into(), to_percent_length))
-    }
+  // limitation check
+  // (1)
+  if to_len<0. || par_len<to_len { return None; }
+
+  // (2)
+  if !(if is_expanding {
+    max_len.map(|x| x.max_check(to_len, par_len)).unwrap_or(true)
   } else {
-    None
+    min_len.map(|x| x.min_check(to_len, par_len)).unwrap_or(true) 
+  }) {
+    return None;
   }
-}
 
-
-/// Return (to_length, to_percent_length, is-expanding).
-/// Return None if to_length<0. or parent_length<length;
-/// 
-fn get_panel_to_lengths(is_lateral: bool, to_left: bool, element: &Element, e: MouseEvent) -> Option<(f64, f64, bool)> {
-  
-  let Some((parent_length, length, gap)) = get_lengths(is_lateral, to_left, element, e) else { return None };
-  let to_length = length + gap;
-
-  if to_length<0. || parent_length<to_length { return None; }
-
-  Some((to_length, to_length/parent_length*100., to_length>length))
+  // set style
+  let style_len = StyleLength::new(to_len, par_len, to_pixel);
+  if !skip_set_style {
+    style_len.set_style(&element.unchecked_into(), is_lateral);
+  }
+  Some(style_len)
 }
