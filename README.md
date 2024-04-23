@@ -1,8 +1,8 @@
 # Sycamore-Seoul
 
-<b>This crate is DEPRECATED.</b>
+⚠️ <b>This crate is DEPRECATED.</b>
 
-Scollbar and Resizer utilities are now consolidated into [**webtric**]("https://crates.io/crates/webtric") crate.
+Scollbar and Resizer utilities are now consolidated into [**webtric**]("https://crates.io/crates/webtric") crate. Recommend to use webtric.
 
 
 ---
