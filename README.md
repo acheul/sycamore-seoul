@@ -2,7 +2,7 @@
 
 ⚠️ <b>This crate is DEPRECATED.</b>
 
-Scollbar and Resizer utilities are now consolidated into [**webtric**]("https://crates.io/crates/webtric") crate. Recommend to use webtric.
+Scollbar and Resizer utilities are now consolidated into [**webtric**](https://crates.io/crates/webtric) crate. Recommend to use webtric.
 
 
 ---
